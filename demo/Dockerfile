@@ -1,18 +1,36 @@
-# Bir Java geliştirme kiti (JDK) içeren temel bir OpenJDK imajı kullanın
-FROM openjdk:17-jdk-slim
+# Aşama 1: Uygulamayı derlemek için bir build ortamı oluştur
+FROM openjdk:17-jdk-slim AS builder
 
-# JAR dosyasının kopyalanacağı dizini belirleyin
+# Çalışma dizinini belirle
 WORKDIR /app
 
-# Maven veya Gradle ile oluşturulan JAR dosyasını kopyalayın
-# Target klasöründeki JAR dosyanızın adını ve versiyonunu buraya doğru yazın!
-# Örnek: my-spring-app-0.0.1-SNAPSHOT.jar
-COPY target/demo-0.0.1-SNAPSHOT.jar app.jar
+# Maven Wrapper dosyalarını ve pom.xml'i kopyala
+# Bu, bağımlılıkların her derlemede yeniden indirilmesini engeller
+COPY .mvn .mvn
+COPY mvnw .
+COPY mvnw.cmd .
+COPY pom.xml .
 
-# Uygulama başladıktan sonra 8080 portunu dışarıya açın (Spring Boot varsayılanı)
-# Render, PORT ortam değişkenini sağlayacağı için Spring uygulamanız bunu kullanacaktır.
+# Bağımlılıkları indir (sadece pom.xml değiştiğinde yeniden çalışır)
+RUN ./mvnw dependency:go-offline -B
+
+# Projenin kalan kaynak kodunu kopyala
+COPY src src
+
+# Uygulamayı derle ve JAR dosyasını oluştur
+RUN ./mvnw clean package -DskipTests
+
+# Aşama 2: Nihai çalışma imajını oluştur (daha küçük ve sadece JRE içerir)
+FROM openjdk:17-jre-slim
+
+# Çalışma dizinini belirle
+WORKDIR /app
+
+# İlk aşamada oluşturulan JAR dosyasını kopyala
+COPY --from=builder /app/target/demo-0.0.1-SNAPSHOT.jar app.jar
+
+# Uygulama başladıktan sonra 8080 portunu dışarıya aç
 EXPOSE 8080
 
 # Uygulamayı başlatma komutu
-# server.port=${PORT:8080} ayarı olduğu için Render'ın sağladığı PORT değişkeni kullanılacaktır.
 ENTRYPOINT ["java", "-jar", "app.jar"]
