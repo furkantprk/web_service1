@@ -5,11 +5,11 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody; // Burayı ekledik
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@FeignClient(name = "urun-bilgileri-client", url = "http://localhost:8081")
+@FeignClient(name = "urun-bilgileri-client", url = "https://kf-proje1.onrender.com")
 public interface UrunBilgileriFeignClient {
 
     @GetMapping("/api/urunler")
