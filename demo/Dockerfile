@@ -7,7 +7,7 @@ WORKDIR /app
 # Maven veya Gradle ile oluşturulan JAR dosyasını kopyalayın
 # Target klasöründeki JAR dosyanızın adını ve versiyonunu buraya doğru yazın!
 # Örnek: my-spring-app-0.0.1-SNAPSHOT.jar
-COPY target/demo-0.0.1-SNAPSHOT.jar app.jar # <-- Bu satır düzeltildi!
+COPY target/demo-0.0.1-SNAPSHOT.jar app.jar
 
 # Uygulama başladıktan sonra 8080 portunu dışarıya açın (Spring Boot varsayılanı)
 # Render, PORT ortam değişkenini sağlayacağı için Spring uygulamanız bunu kullanacaktır.
