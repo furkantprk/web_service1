@@ -1,8 +1,11 @@
 # Aşama 1: Uygulamayı derlemek için bir build ortamı oluştur
 FROM openjdk:17-jdk-slim AS builder
 
-# Çalışma dizinini belirle
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+
 WORKDIR /app
+
 
 # Maven Wrapper dosyalarını ve pom.xml'i kopyala
 # Bu, bağımlılıkların her derlemede yeniden indirilmesini engeller
