@@ -12,7 +12,7 @@ COPY mvnw.cmd .
 COPY pom.xml .
 
 # mvnw betiğine çalıştırma izni ver
-RUN chmod +x mvnw # <-- Bu satır eklendi!
+RUN chmod +x mvnw
 
 # Bağımlılıkları indir (sadece pom.xml değiştiğinde yeniden çalışır)
 RUN ./mvnw dependency:go-offline -B
@@ -21,7 +21,7 @@ RUN ./mvnw dependency:go-offline -B
 COPY src src
 
 # Uygulamayı derle ve JAR dosyasını oluştur
-RUN ./mvnw clean package -DskipTests
+RUN ./mvnw clean package -DskipTests -Dproject.build.sourceEncoding=UTF-8 -Dfile.encoding=UTF-8
 
 # Aşama 2: Nihai çalışma imajını oluştur (daha küçük ve sadece JRE içerir)
 FROM openjdk:17-jdk-slim
