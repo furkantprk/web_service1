@@ -21,7 +21,7 @@ COPY src src
 RUN ./mvnw clean package -DskipTests
 
 # Aşama 2: Nihai çalışma imajını oluştur (daha küçük ve sadece JRE içerir)
-FROM openjdk:17-jre-slim
+FROM openjdk:17-jdk-slim
 
 # Çalışma dizinini belirle
 WORKDIR /app
