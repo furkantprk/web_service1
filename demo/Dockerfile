@@ -11,6 +11,9 @@ COPY mvnw .
 COPY mvnw.cmd .
 COPY pom.xml .
 
+# mvnw betiğine çalıştırma izni ver
+RUN chmod +x mvnw # <-- Bu satır eklendi!
+
 # Bağımlılıkları indir (sadece pom.xml değiştiğinde yeniden çalışır)
 RUN ./mvnw dependency:go-offline -B
 
