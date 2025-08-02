@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UrunBilgileriRemoteController.class) // Sadece bu kontrolcüyü test eder
-public class UrunBilgileriRemoteControllerTest {
+class UrunBilgileriRemoteControllerTest {
 
     @Autowired
     private MockMvc mockMvc; // HTTP istekleri simüle etmek için

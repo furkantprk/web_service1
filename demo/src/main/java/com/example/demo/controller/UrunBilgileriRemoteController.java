@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/remote")
+@RequestMapping("/remote") // Bu controller'ın tüm endpointleri /remote altında olacak
 public class UrunBilgileriRemoteController {
 
     private final UrunBilgileriRemoteService service;
@@ -20,8 +20,6 @@ public class UrunBilgileriRemoteController {
         return service.getRemoteUrunler();
     }
 
-    // Kredi numarasına göre uzaktan ürün arama endpoint'i
-    // GET https://web-service1-8gnq.onrender.com/remote/urunler/kredi/{krediNumarasi}
     @GetMapping("/urunler/kredi/{krediNumarasi}")
     public ResponseEntity<List<UrunBilgileriDTO>> getRemoteUrunlerByKrediNumarasi(@PathVariable String krediNumarasi) {
         List<UrunBilgileriDTO> urunler = service.getRemoteUrunlerByKrediNumarasi(krediNumarasi);
@@ -31,9 +29,6 @@ public class UrunBilgileriRemoteController {
         return ResponseEntity.ok(urunler);
     }
 
-    // Uzaktan ürün bilgilerini güncelleme endpoint'i
-    // PUT https://web-service1-8gnq.onrender.com/remote/urunler/{krediNumarasi}/{sira}
-    // Request Body: { "rehinDurum": 1, "productLineId": 123 }
     @PutMapping("/urunler/{krediNumarasi}/{sira}")
     public ResponseEntity<UrunBilgileriDTO> updateRemoteUrunBilgileri(
             @PathVariable String krediNumarasi,
@@ -44,5 +39,17 @@ public class UrunBilgileriRemoteController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(updated);
+    }
+
+
+    @DeleteMapping("/urunler/delete-and-reinsert-state-info/{productLineId}")
+    public ResponseEntity<String> deleteAndReinsertRemoteEgmStateInformation(@PathVariable Long productLineId) {
+        try {
+            String responseMessage = service.deleteAndReinsertRemoteEgmStateInformation(productLineId);
+            return ResponseEntity.ok(responseMessage);
+        } catch (Exception e) {
+            // Feign Client'tan gelen hataları burada yakalayabilirsiniz
+            return ResponseEntity.status(500).body("Uzak serviste işlem sırasında bir hata oluştu: " + e.getMessage());
+        }
     }
 }
