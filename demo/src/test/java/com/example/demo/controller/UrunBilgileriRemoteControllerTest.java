@@ -44,13 +44,13 @@ class UrunBilgileriRemoteControllerTest {
         urun1.setKrediNumarasi("KREDI123");
         urun1.setSira(1);
         urun1.setRehinDurum(0);
-        urun1.setProductLineId(101);
+        urun1.setProductLineId(101L);
 
         urun2 = new UrunBilgileriDTO();
         urun2.setKrediNumarasi("KREDI456");
         urun2.setSira(2);
         urun2.setRehinDurum(1);
-        urun2.setProductLineId(102);
+        urun2.setProductLineId(102L);
     }
 
     @Test
@@ -105,7 +105,7 @@ class UrunBilgileriRemoteControllerTest {
         updatedUrun.setKrediNumarasi(krediNumarasi);
         updatedUrun.setSira(sira);
         updatedUrun.setRehinDurum(1); // Değişen değer
-        updatedUrun.setProductLineId(101);
+        updatedUrun.setProductLineId(101L);
 
         // Servisin çağrıldığında güncellenmiş DTO'yu döndürmesini bekle
         when(service.updateRemoteUrunBilgileri(anyString(), anyInt(), any(UrunBilgileriDTO.class)))
