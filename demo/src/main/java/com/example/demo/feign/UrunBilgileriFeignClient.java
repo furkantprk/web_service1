@@ -1,5 +1,6 @@
 package com.example.demo.feign;
 
+import com.example.demo.config.FeignConfig;
 import com.example.demo.dto.UrunBilgileriDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 
 // FeignClient, kf-proje1.onrender.com adresindeki servise bağlanacak
-@FeignClient(name = "urun-bilgileri-client", url = "https://kf-proje1.onrender.com")
+@FeignClient(name = "urun-bilgileri-client", url = "https://kf-proje1.onrender.com", configuration = FeignConfig.class)
 public interface UrunBilgileriFeignClient {
 
     @GetMapping("/api/urunler")
