@@ -29,6 +29,16 @@ public class UrunBilgileriRemoteController {
         return ResponseEntity.ok(urunler);
     }
 
+    // YENİ ENDPOINT: Kredi numarasına ait sıra numaralarını döndürür
+    @GetMapping("/urunler/siralar/{krediNumarasi}")
+    public ResponseEntity<List<Integer>> getSiralarByKrediNumarasi(@PathVariable String krediNumarasi) {
+        List<Integer> siralar = service.getRemoteSiralarByKrediNumarasi(krediNumarasi);
+        if (siralar.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(siralar);
+    }
+
     @PutMapping("/urunler/{krediNumarasi}/{sira}")
     public ResponseEntity<UrunBilgileriDTO> updateUrunBilgileri(
             @PathVariable String krediNumarasi,
@@ -45,11 +55,18 @@ public class UrunBilgileriRemoteController {
         }
     }
 
-    // SADECE BU ENDPOINT KULLANILACAK: Kredi numarasına göre işlem yapacak
-    @DeleteMapping("/urunler/delete-and-reinsert-state-info-by-kredi/{krediNumarasi}")
-    public ResponseEntity<String> deleteAndReinsertRemoteEgmStateInformationByKrediNumarasi(@PathVariable String krediNumarasi) {
+    // GÜNCELLENMİŞ DELETE ENDPOINT: Kredi numarası ve isteğe bağlı sıra numarası ile işlem yapacak
+    // RequestParam kullandık, bu sayede URL'de ?krediNumarasi=X&sira=Y şeklinde gönderilecek.
+    @DeleteMapping("/urunler/delete-and-reinsert-state-info-by-kredi")
+    public ResponseEntity<String> deleteAndReinsertRemoteEgmStateInformationByKrediNumarasi(
+            @RequestParam String krediNumarasi,
+            @RequestParam(required = false) Integer sira) {
         try {
-            String responseMessage = service.deleteAndReinsertRemoteEgmStateInformationByKrediNumarasi(krediNumarasi);
+            // Servise hem kredi numarasını hem de sıra numarasını iletiyoruz
+            String responseMessage = service.deleteAndReinsertRemoteEgmStateInformationByKrediNumarasiAndSira(krediNumarasi, sira);
+            if (responseMessage.contains("bulunamadı")) { // Mesaj içeriğine göre 404 dönüyoruz
+                return ResponseEntity.status(404).body(responseMessage);
+            }
             return ResponseEntity.ok(responseMessage);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Uzak serviste işlem sırasında bir hata oluştu: " + e.getMessage());

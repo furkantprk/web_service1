@@ -16,10 +16,16 @@ public interface UrunBilgileriFeignClient {
     @GetMapping("/api/urunler/kredi/{krediNumarasi}")
     List<UrunBilgileriDTO> getUrunBilgileriByKrediNumarasi(@PathVariable("krediNumarasi") String krediNumarasi);
 
+    // YENİ FEIGN METOT: Kredi numarasına ait sıra numaralarını getirir
+    @GetMapping("/api/urunler/siralar/{krediNumarasi}")
+    List<Integer> getSiralarByKrediNumarasi(@PathVariable("krediNumarasi") String krediNumarasi);
+
     @PutMapping("/api/urunler/{krediNumarasi}/{sira}")
     UrunBilgileriDTO updateUrunBilgileri(@PathVariable("krediNumarasi") String krediNumarasi, @PathVariable("sira") Integer sira, @RequestBody UrunBilgileriDTO urunBilgileriDTO);
 
-
-    @DeleteMapping("/api/urunler/delete-and-reinsert-state-info-by-kredi/{krediNumarasi}")
-    String deleteAndReinsertEgmStateInformationByKrediNumarasi(@PathVariable("krediNumarasi") String krediNumarasi);
+    // GÜNCELLENMİŞ FEIGN METOT: Kredi numarası ve isteğe bağlı sıra numarası ile işlem yapacak
+    // @RequestParam kullanıldığı için name belirtmeliyiz.
+    @DeleteMapping("/api/urunler/delete-and-reinsert-state-info-by-kredi")
+    String deleteAndReinsertEgmStateInformationByKrediNumarasi(@RequestParam("krediNumarasi") String krediNumarasi,
+                                                               @RequestParam(name = "sira", required = false) Integer sira);
 }

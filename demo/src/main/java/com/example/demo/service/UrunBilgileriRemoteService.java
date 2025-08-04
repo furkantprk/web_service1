@@ -21,12 +21,17 @@ public class UrunBilgileriRemoteService {
         return feignClient.getUrunBilgileriByKrediNumarasi(krediNumarasi);
     }
 
+    // YENİ SERVİS METOT: Kredi numarasına ait sıra numaralarını getirir
+    public List<Integer> getRemoteSiralarByKrediNumarasi(String krediNumarasi) {
+        return feignClient.getSiralarByKrediNumarasi(krediNumarasi);
+    }
+
     public UrunBilgileriDTO updateRemoteUrunBilgileri(String krediNumarasi, Integer sira, UrunBilgileriDTO urunBilgileriDTO) {
         return feignClient.updateUrunBilgileri(krediNumarasi, sira, urunBilgileriDTO);
     }
 
-    // SADECE BU SERVİS METOT KULLANILACAK: Kredi numarasına göre işlem yapacak
-    public String deleteAndReinsertRemoteEgmStateInformationByKrediNumarasi(String krediNumarasi) {
-        return feignClient.deleteAndReinsertEgmStateInformationByKrediNumarasi(krediNumarasi);
+    // GÜNCELLENMİŞ SERVİS METOT: Kredi numarası ve isteğe bağlı sıra numarası ile işlem yapacak
+    public String deleteAndReinsertRemoteEgmStateInformationByKrediNumarasiAndSira(String krediNumarasi, Integer sira) {
+        return feignClient.deleteAndReinsertEgmStateInformationByKrediNumarasi(krediNumarasi, sira);
     }
 }
