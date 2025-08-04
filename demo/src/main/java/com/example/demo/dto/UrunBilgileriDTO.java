@@ -9,5 +9,5 @@ public class UrunBilgileriDTO {
     private String krediNumarasi;
     private Integer sira;
     private Integer rehinDurum;
-    private Long productLineId; // Tipi Integer'dan Long'a güncellendi
+    private Long productLineId;
 }

@@ -4,56 +4,49 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import javax.naming.AuthenticationException;
 import java.time.LocalDateTime;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex, WebRequest request) {
-        ErrorResponse error = new ErrorResponse(
+    @ExceptionHandler(RemoteServiceBadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequest(RemoteServiceBadRequestException ex) {
+        return new ResponseEntity<>(new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 ex.getMessage(),
-                request.getDescription(false),
+                "Remote service returned BAD_REQUEST",
                 LocalDateTime.now()
-        );
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        ), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
-        ErrorResponse error = new ErrorResponse(
+    @ExceptionHandler(RemoteServiceUnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorized(RemoteServiceUnauthorizedException ex) {
+        return new ResponseEntity<>(new ErrorResponse(
                 HttpStatus.UNAUTHORIZED.value(),
                 ex.getMessage(),
-                request.getDescription(false),
+                "Remote service returned UNAUTHORIZED",
                 LocalDateTime.now()
-        );
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        ), HttpStatus.UNAUTHORIZED);
     }
 
-    @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex, WebRequest request) {
-        ErrorResponse error = new ErrorResponse(
+    @ExceptionHandler(RemoteServiceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(RemoteServiceNotFoundException ex) {
+        return new ResponseEntity<>(new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
                 ex.getMessage(),
-                request.getDescription(false),
+                "Remote service returned NOT_FOUND",
                 LocalDateTime.now()
-        );
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        ), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex, WebRequest request) {
-        ErrorResponse error = new ErrorResponse(
+    public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
+        return new ResponseEntity<>(new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 ex.getMessage(),
-                request.getDescription(false),
+                "Bilinmeyen bir hata oluştu",
                 LocalDateTime.now()
-        );
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        ), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
