@@ -10,18 +10,18 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/remote") // Bu controller'ın tüm endpointleri /remote altında olacak
+@RequestMapping("/remote")
 public class UrunBilgileriRemoteController {
 
     private final UrunBilgileriRemoteService service;
 
     @GetMapping("/urunler")
-    public List<UrunBilgileriDTO> getRemoteUrunler() {
-        return service.getRemoteUrunler();
+    public List<UrunBilgileriDTO> getUrunBilgileri() {
+        return service.getRemoteUrunBilgileri();
     }
 
     @GetMapping("/urunler/kredi/{krediNumarasi}")
-    public ResponseEntity<List<UrunBilgileriDTO>> getRemoteUrunlerByKrediNumarasi(@PathVariable String krediNumarasi) {
+    public ResponseEntity<List<UrunBilgileriDTO>> getUrunlerByKrediNumarasi(@PathVariable String krediNumarasi) {
         List<UrunBilgileriDTO> urunler = service.getRemoteUrunlerByKrediNumarasi(krediNumarasi);
         if (urunler.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -30,25 +30,28 @@ public class UrunBilgileriRemoteController {
     }
 
     @PutMapping("/urunler/{krediNumarasi}/{sira}")
-    public ResponseEntity<UrunBilgileriDTO> updateRemoteUrunBilgileri(
+    public ResponseEntity<UrunBilgileriDTO> updateUrunBilgileri(
             @PathVariable String krediNumarasi,
             @PathVariable Integer sira,
             @RequestBody UrunBilgileriDTO urunBilgileriDTO) {
-        UrunBilgileriDTO updated = service.updateRemoteUrunBilgileri(krediNumarasi, sira, urunBilgileriDTO);
-        if (updated == null) {
-            return ResponseEntity.notFound().build();
+        try {
+            UrunBilgileriDTO updated = service.updateRemoteUrunBilgileri(krediNumarasi, sira, urunBilgileriDTO);
+            if (updated == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
         }
-        return ResponseEntity.ok(updated);
     }
 
-
-    @DeleteMapping("/urunler/delete-and-reinsert-state-info/{productLineId}")
-    public ResponseEntity<String> deleteAndReinsertRemoteEgmStateInformation(@PathVariable Long productLineId) {
+    // SADECE BU ENDPOINT KULLANILACAK: Kredi numarasına göre işlem yapacak
+    @DeleteMapping("/urunler/delete-and-reinsert-state-info-by-kredi/{krediNumarasi}")
+    public ResponseEntity<String> deleteAndReinsertRemoteEgmStateInformationByKrediNumarasi(@PathVariable String krediNumarasi) {
         try {
-            String responseMessage = service.deleteAndReinsertRemoteEgmStateInformation(productLineId);
+            String responseMessage = service.deleteAndReinsertRemoteEgmStateInformationByKrediNumarasi(krediNumarasi);
             return ResponseEntity.ok(responseMessage);
         } catch (Exception e) {
-            // Feign Client'tan gelen hataları burada yakalayabilirsiniz
             return ResponseEntity.status(500).body("Uzak serviste işlem sırasında bir hata oluştu: " + e.getMessage());
         }
     }
