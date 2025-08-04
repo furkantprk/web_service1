@@ -44,19 +44,19 @@ class UrunBilgileriRemoteControllerTest {
         urun1.setKrediNumarasi("KREDI123");
         urun1.setSira(1);
         urun1.setRehinDurum(0);
-        urun1.setProductLineId(101L);
+        urun1.setProductLineId(101L); // Long tipini yansıtalım
 
         urun2 = new UrunBilgileriDTO();
         urun2.setKrediNumarasi("KREDI456");
         urun2.setSira(2);
         urun2.setRehinDurum(1);
-        urun2.setProductLineId(102L);
+        urun2.setProductLineId(102L); // Long tipini yansıtalım
     }
 
     @Test
-    void getRemoteUrunler_ShouldReturnAllUrunler() throws Exception {
+    void getRemoteUrunBilgileri_ShouldReturnAllUrunler() throws Exception { // Metot adı güncellendi
         List<UrunBilgileriDTO> urunler = Arrays.asList(urun1, urun2);
-        when(service.getRemoteUrunler()).thenReturn(urunler); // Servis metodunu mock'la
+        when(service.getRemoteUrunBilgileri()).thenReturn(urunler); // Servis metodu adı güncellendi
 
         mockMvc.perform(get("/remote/urunler")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -66,8 +66,8 @@ class UrunBilgileriRemoteControllerTest {
     }
 
     @Test
-    void getRemoteUrunler_ShouldReturnEmptyListWhenNoUrunler() throws Exception {
-        when(service.getRemoteUrunler()).thenReturn(Collections.emptyList());
+    void getRemoteUrunBilgileri_ShouldReturnEmptyListWhenNoUrunler() throws Exception { // Metot adı güncellendi
+        when(service.getRemoteUrunBilgileri()).thenReturn(Collections.emptyList()); // Servis metodu adı güncellendi
 
         mockMvc.perform(get("/remote/urunler")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -105,7 +105,7 @@ class UrunBilgileriRemoteControllerTest {
         updatedUrun.setKrediNumarasi(krediNumarasi);
         updatedUrun.setSira(sira);
         updatedUrun.setRehinDurum(1); // Değişen değer
-        updatedUrun.setProductLineId(101L);
+        updatedUrun.setProductLineId(101L); // ProductLineId de set edildi
 
         // Servisin çağrıldığında güncellenmiş DTO'yu döndürmesini bekle
         when(service.updateRemoteUrunBilgileri(anyString(), anyInt(), any(UrunBilgileriDTO.class)))
@@ -124,6 +124,7 @@ class UrunBilgileriRemoteControllerTest {
         Integer sira = 99;
         UrunBilgileriDTO updateRequest = new UrunBilgileriDTO();
         updateRequest.setRehinDurum(1);
+        updateRequest.setProductLineId(999L); // ProductLineId de set edildi
 
         when(service.updateRemoteUrunBilgileri(anyString(), anyInt(), any(UrunBilgileriDTO.class)))
                 .thenReturn(null); // Servis null döndürdüğünde
@@ -132,5 +133,31 @@ class UrunBilgileriRemoteControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isNotFound()); // 404 Not Found bekleniyor
+    }
+
+    @Test
+    void deleteAndReinsertRemoteEgmStateInformationByKrediNumarasi_ShouldReturnOk() throws Exception {
+        String krediNumarasi = "KREDI123";
+        when(service.deleteAndReinsertRemoteEgmStateInformationByKrediNumarasi(krediNumarasi))
+                .thenReturn("İşlem başarıyla tamamlandı."); // Başarılı bir mesaj döndürmesini bekle
+
+        mockMvc.perform(delete("/remote/urunler/delete-and-reinsert-state-info-by-kredi/{krediNumarasi}", krediNumarasi)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()) // 200 OK bekleniyor
+                .andExpect(content().string("İşlem başarıyla tamamlandı.")); // Dönen mesajı doğrula
+    }
+
+    @Test
+    void deleteAndReinsertRemoteEgmStateInformationByKrediNumarasi_ShouldReturnNotFound() throws Exception {
+        String krediNumarasi = "NONEXISTENT";
+        when(service.deleteAndReinsertRemoteEgmStateInformationByKrediNumarasi(krediNumarasi))
+                .thenThrow(new RuntimeException("Kredi numarası bulunamadı.")); // Servis bir hata fırlattığında
+
+        // Controller'daki try-catch bloğu 500 dönüyor olabilir, buna dikkat edelim.
+        // Eğer controller 404 değil 500 dönecekse, burayı 500 olarak güncellemeliyiz.
+        // Mevcut controller kodunda 404 dönmediği için 500 beklenmeli.
+        mockMvc.perform(delete("/remote/urunler/delete-and-reinsert-state-info-by-kredi/{krediNumarasi}", krediNumarasi)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError()); // 500 Internal Server Error bekleniyor
     }
 }

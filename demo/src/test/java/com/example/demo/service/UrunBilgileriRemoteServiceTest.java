@@ -22,24 +22,24 @@ class UrunBilgileriRemoteServiceTest {
     }
 
     @Test
-    void testGetRemoteUrunler_returnsList() {
+    void testGetRemoteUrunBilgileri_returnsList() { // Metot adı güncellendi
         UrunBilgileriDTO sample = new UrunBilgileriDTO();
-        when(feignClient.getUrunler()).thenReturn(List.of(sample));
+        when(feignClient.getUrunBilgileri()).thenReturn(List.of(sample)); // Feign client metot adı güncellendi
 
-        List<UrunBilgileriDTO> result = remoteService.getRemoteUrunler();
+        List<UrunBilgileriDTO> result = remoteService.getRemoteUrunBilgileri(); // Servis metot adı güncellendi
         assertEquals(1, result.size());
-        verify(feignClient, times(1)).getUrunler();
+        verify(feignClient, times(1)).getUrunBilgileri(); // Feign client metot adı güncellendi
     }
 
     @Test
     void testGetRemoteUrunlerByKrediNumarasi_returnsFilteredList() {
         String krediNumarasi = "12345";
         UrunBilgileriDTO dto = new UrunBilgileriDTO();
-        when(feignClient.getUrunlerByKrediNumarasi(krediNumarasi)).thenReturn(List.of(dto));
+        when(feignClient.getUrunBilgileriByKrediNumarasi(krediNumarasi)).thenReturn(List.of(dto)); // Feign client metot adı güncellendi
 
         List<UrunBilgileriDTO> result = remoteService.getRemoteUrunlerByKrediNumarasi(krediNumarasi);
         assertFalse(result.isEmpty());
-        verify(feignClient).getUrunlerByKrediNumarasi(krediNumarasi);
+        verify(feignClient).getUrunBilgileriByKrediNumarasi(krediNumarasi); // Feign client metot adı güncellendi
     }
 
     @Test
@@ -53,5 +53,35 @@ class UrunBilgileriRemoteServiceTest {
         UrunBilgileriDTO result = remoteService.updateRemoteUrunBilgileri(krediNumarasi, sira, inputDto);
         assertEquals(updatedDto, result);
         verify(feignClient).updateUrunBilgileri(krediNumarasi, sira, inputDto);
+    }
+
+    @Test
+    void testDeleteAndReinsertRemoteEgmStateInformationByKrediNumarasi_returnsSuccessMessage() {
+        String krediNumarasi = "KREDI999";
+        String expectedMessage = "İşlem başarıyla tamamlandı.";
+        // Feign client metodunun çağrıldığında beklenen mesajı döndürmesini mock'la
+        when(feignClient.deleteAndReinsertEgmStateInformationByKrediNumarasi(krediNumarasi))
+                .thenReturn(expectedMessage);
+
+        String result = remoteService.deleteAndReinsertRemoteEgmStateInformationByKrediNumarasi(krediNumarasi);
+
+        assertEquals(expectedMessage, result);
+        // Feign client metodunun doğru kredi numarasıyla çağrıldığını doğrula
+        verify(feignClient, times(1)).deleteAndReinsertEgmStateInformationByKrediNumarasi(krediNumarasi);
+    }
+
+    @Test
+    void testDeleteAndReinsertRemoteEgmStateInformationByKrediNumarasi_handlesException() {
+        String krediNumarasi = "KREDI_INVALID";
+        // Feign client metodunun bir hata fırlatmasını mock'la
+        when(feignClient.deleteAndReinsertEgmStateInformationByKrediNumarasi(krediNumarasi))
+                .thenThrow(new RuntimeException("Uzak servis hatası"));
+
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> {
+            remoteService.deleteAndReinsertRemoteEgmStateInformationByKrediNumarasi(krediNumarasi);
+        });
+
+        assertTrue(thrown.getMessage().contains("Uzak servis hatası"));
+        verify(feignClient, times(1)).deleteAndReinsertEgmStateInformationByKrediNumarasi(krediNumarasi);
     }
 }
