@@ -1,6 +1,7 @@
 package com.example.demo.config;
 
 import feign.Request;
+import feign.codec.ErrorDecoder;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,4 +15,10 @@ public class FeignConfig {
         return new Request.Options(20 * 1000, 60 * 1000); // 20 sn bağlanma, 60 sn yanıtlama
 
     }
+
+    @Bean
+    public ErrorDecoder errorDecoder() {
+        return new FeignErrorDecoder();
+    }
+
 }
