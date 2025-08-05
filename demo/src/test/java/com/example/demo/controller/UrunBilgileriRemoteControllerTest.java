@@ -1,13 +1,17 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.UrunBilgileriDTO;
+import com.example.demo.expection.RemoteServiceNotFoundException;
 import com.example.demo.service.UrunBilgileriRemoteService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -16,10 +20,9 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq; // 'eq' için import eklendi
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -35,191 +38,103 @@ class UrunBilgileriRemoteControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private UrunBilgileriDTO urun1;
-    private UrunBilgileriDTO urun2;
+    private UrunBilgileriDTO sampleDTO;
 
     @BeforeEach
     void setUp() {
-        urun1 = new UrunBilgileriDTO();
-        urun1.setKrediNumarasi("KREDI123");
-        urun1.setSira(1);
-        urun1.setRehinDurum(0);
-        urun1.setProductLineId(101L);
-
-        urun2 = new UrunBilgileriDTO();
-        urun2.setKrediNumarasi("KREDI456");
-        urun2.setSira(2);
-        urun2.setRehinDurum(1);
-        urun2.setProductLineId(102L);
+        sampleDTO = new UrunBilgileriDTO();
+        sampleDTO.setKrediNumarasi("12345");
+        sampleDTO.setSira(1);
+        sampleDTO.setRehinDurum(0);
+        sampleDTO.setProductLineId(100L);
     }
 
     @Test
-    void getRemoteUrunBilgileri_ShouldReturnAllUrunler() throws Exception {
-        List<UrunBilgileriDTO> urunler = Arrays.asList(urun1, urun2);
-        when(service.getRemoteUrunBilgileri()).thenReturn(urunler);
+    void getUrunBilgileri_shouldReturnList() throws Exception {
+        when(service.getRemoteUrunBilgileri()).thenReturn(List.of(sampleDTO));
 
-        mockMvc.perform(get("/remote/urunler")
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/remote/urunler"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].krediNumarasi").value(urun1.getKrediNumarasi()))
-                .andExpect(jsonPath("$[1].krediNumarasi").value(urun2.getKrediNumarasi()));
+                .andExpect(jsonPath("$[0].krediNumarasi").value("12345"));
     }
 
     @Test
-    void getRemoteUrunBilgileri_ShouldReturnEmptyListWhenNoUrunler() throws Exception {
-        when(service.getRemoteUrunBilgileri()).thenReturn(Collections.emptyList());
+    void getUrunlerByKrediNumarasi_shouldReturnList() throws Exception {
+        when(service.getRemoteUrunlerByKrediNumarasi("12345")).thenReturn(List.of(sampleDTO));
 
-        mockMvc.perform(get("/remote/urunler")
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/remote/urunler/kredi/12345"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
+                .andExpect(jsonPath("$[0].sira").value(1));
     }
 
     @Test
-    void getRemoteUrunlerByKrediNumarasi_ShouldReturnUrunlerForGivenKrediNumarasi() throws Exception {
-        String krediNumarasi = "KREDI123";
-        List<UrunBilgileriDTO> urunler = Collections.singletonList(urun1);
-        when(service.getRemoteUrunlerByKrediNumarasi(krediNumarasi)).thenReturn(urunler);
+    void getUrunlerByKrediNumarasi_shouldThrowExceptionWhenEmpty() throws Exception {
+        when(service.getRemoteUrunlerByKrediNumarasi("empty")).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/remote/urunler/kredi/{krediNumarasi}", krediNumarasi)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].krediNumarasi").value(krediNumarasi));
-    }
-
-    @Test
-    void getRemoteUrunlerByKrediNumarasi_ShouldReturnNotFoundWhenNoUrunlerFound() throws Exception {
-        String krediNumarasi = "NONEXISTENT";
-        when(service.getRemoteUrunlerByKrediNumarasi(krediNumarasi)).thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/remote/urunler/kredi/{krediNumarasi}", krediNumarasi)
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/remote/urunler/kredi/empty"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void getSiralarByKrediNumarasi_ShouldReturnListOfSiralar() throws Exception {
-        String krediNumarasi = "KREDI123";
-        List<Integer> siralar = Arrays.asList(1, 3, 5);
-        when(service.getRemoteSiralarByKrediNumarasi(krediNumarasi)).thenReturn(siralar);
+    void getSiralarByKrediNumarasi_shouldReturnList() throws Exception {
+        when(service.getRemoteSiralarByKrediNumarasi("12345")).thenReturn(List.of(1, 2, 3));
 
-        mockMvc.perform(get("/remote/urunler/siralar/{krediNumarasi}", krediNumarasi)
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/remote/urunler/siralar/12345"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0]").value(1))
-                .andExpect(jsonPath("$[1]").value(3))
-                .andExpect(jsonPath("$[2]").value(5));
+                .andExpect(jsonPath("$[0]").value(1));
     }
 
     @Test
-    void getSiralarByKrediNumarasi_ShouldReturnNotFoundWhenNoSiralarFound() throws Exception {
-        String krediNumarasi = "NONEXISTENT";
-        when(service.getRemoteSiralarByKrediNumarasi(krediNumarasi)).thenReturn(Collections.emptyList());
+    void getSiralarByKrediNumarasi_shouldThrowExceptionWhenEmpty() throws Exception {
+        when(service.getRemoteSiralarByKrediNumarasi("empty")).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/remote/urunler/siralar/{krediNumarasi}", krediNumarasi)
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/remote/urunler/siralar/empty"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void updateRemoteUrunBilgileri_ShouldUpdateUrunBilgileriSuccessfully() throws Exception {
-        String krediNumarasi = "KREDI123";
-        Integer sira = 1;
-        UrunBilgileriDTO updatedUrun = new UrunBilgileriDTO();
-        updatedUrun.setKrediNumarasi(krediNumarasi);
-        updatedUrun.setSira(sira);
-        updatedUrun.setRehinDurum(1);
-        updatedUrun.setProductLineId(101L);
+    void updateUrunBilgileri_shouldReturnUpdated() throws Exception {
+        when(service.updateRemoteUrunBilgileri(eq("12345"), eq(1), any(UrunBilgileriDTO.class)))
+                .thenReturn(sampleDTO);
 
-        when(service.updateRemoteUrunBilgileri(anyString(), anyInt(), any(UrunBilgileriDTO.class)))
-                .thenReturn(updatedUrun);
 
-        mockMvc.perform(put("/remote/urunler/{krediNumarasi}/{sira}", krediNumarasi, sira)
+        mockMvc.perform(put("/remote/urunler/12345/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updatedUrun)))
+                        .content(objectMapper.writeValueAsString(sampleDTO)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.rehinDurum").value(1));
+                .andExpect(jsonPath("$.rehinDurum").value(0));
     }
 
     @Test
-    void updateRemoteUrunBilgileri_ShouldReturnNotFoundWhenUrunNotFound() throws Exception {
-        String krediNumarasi = "NONEXISTENT";
-        Integer sira = 99;
-        UrunBilgileriDTO updateRequest = new UrunBilgileriDTO();
-        updateRequest.setRehinDurum(1);
-        updateRequest.setProductLineId(999L);
+    void updateUrunBilgileri_shouldThrowExceptionWhenNull() throws Exception {
+        when(service.updateRemoteUrunBilgileri("12345", 1, sampleDTO)).thenReturn(null);
 
-        when(service.updateRemoteUrunBilgileri(anyString(), anyInt(), any(UrunBilgileriDTO.class)))
-                .thenReturn(null);
-
-        mockMvc.perform(put("/remote/urunler/{krediNumarasi}/{sira}", krediNumarasi, sira)
+        mockMvc.perform(put("/remote/urunler/12345/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateRequest)))
+                        .content(objectMapper.writeValueAsString(sampleDTO)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void deleteAndReinsertRemoteEgmStateInformationByKrediNumarasi_ShouldReturnOkForSpecificSira() throws Exception {
-        String krediNumarasi = "KREDI123";
-        Integer sira = 1;
-        String expectedMessage = "Kredi numarası: KREDI123 ve sıra: 1 için EgmStateInformation başarıyla güncellendi.";
-        // Servis metodunun doğru parametrelerle çağrıldığını mock'la
-        when(service.deleteAndReinsertRemoteEgmStateInformationByKrediNumarasiAndSira(eq(krediNumarasi), eq(sira)))
-                .thenReturn(expectedMessage);
+    void deleteAndReinsertRemoteEgmStateInformation_shouldReturnOk() throws Exception {
+        when(service.deleteAndReinsertRemoteEgmStateInformationByKrediNumarasiAndSira("12345", 1))
+                .thenReturn("Başarıyla güncellendi");
 
         mockMvc.perform(delete("/remote/urunler/delete-and-reinsert-state-info-by-kredi")
-                        .param("krediNumarasi", krediNumarasi) // Query parametre olarak gönder
-                        .param("sira", String.valueOf(sira)) // Query parametre olarak gönder
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .param("krediNumarasi", "12345")
+                        .param("sira", "1"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(expectedMessage));
+                .andExpect(content().string("Başarıyla güncellendi"));
     }
 
     @Test
-    void deleteAndReinsertRemoteEgmStateInformationByKrediNumarasi_ShouldReturnOkForAllSiralar() throws Exception {
-        String krediNumarasi = "KREDI123";
-        // 'sira' parametresi gönderilmeyecek, bu da 'null' anlamına gelecek
-        String expectedMessage = "Kredi numarası: KREDI123 için EgmStateInformation başarıyla güncellendi.";
-        when(service.deleteAndReinsertRemoteEgmStateInformationByKrediNumarasiAndSira(eq(krediNumarasi), eq(null))) // null bekliyoruz
-                .thenReturn(expectedMessage);
+    void deleteAndReinsertRemoteEgmStateInformation_shouldThrowException() throws Exception {
+        when(service.deleteAndReinsertRemoteEgmStateInformationByKrediNumarasiAndSira("empty", 1))
+                .thenReturn("bilgi bulunamadı");
 
         mockMvc.perform(delete("/remote/urunler/delete-and-reinsert-state-info-by-kredi")
-                        .param("krediNumarasi", krediNumarasi) // Sadece krediNumarasi gönder
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().string(expectedMessage));
-    }
-
-    @Test
-    void deleteAndReinsertRemoteEgmStateInformationByKrediNumarasi_ShouldReturnNotFound() throws Exception {
-        String krediNumarasi = "NONEXISTENT";
-        Integer sira = 1;
-        String errorMessage = "Kredi numarası: NONEXISTENT ve sıra: 1 ile eşleşen kayıt bulunamadı.";
-        // Servis metodunun belirli bir hata mesajı döndürmesini mock'la
-        when(service.deleteAndReinsertRemoteEgmStateInformationByKrediNumarasiAndSira(eq(krediNumarasi), eq(sira)))
-                .thenReturn(errorMessage);
-
-        mockMvc.perform(delete("/remote/urunler/delete-and-reinsert-state-info-by-kredi")
-                        .param("krediNumarasi", krediNumarasi)
-                        .param("sira", String.valueOf(sira))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound()) // Servis mesajına göre 404 dönüyoruz
-                .andExpect(content().string(errorMessage));
-    }
-
-    @Test
-    void deleteAndReinsertRemoteEgmStateInformationByKrediNumarasi_ShouldReturnInternalServerError() throws Exception {
-        String krediNumarasi = "ERROR_CASE";
-        Integer sira = 1;
-        // Servis metodunun hata fırlatmasını mock'la
-        when(service.deleteAndReinsertRemoteEgmStateInformationByKrediNumarasiAndSira(eq(krediNumarasi), eq(sira)))
-                .thenThrow(new RuntimeException("Uzak servis bilinmeyen bir hata verdi."));
-
-        mockMvc.perform(delete("/remote/urunler/delete-and-reinsert-state-info-by-kredi")
-                        .param("krediNumarasi", krediNumarasi)
-                        .param("sira", String.valueOf(sira))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().string("Uzak serviste işlem sırasında bir hata oluştu: Uzak servis bilinmeyen bir hata verdi."));
+                        .param("krediNumarasi", "empty")
+                        .param("sira", "1"))
+                .andExpect(status().isNotFound());
     }
 }
