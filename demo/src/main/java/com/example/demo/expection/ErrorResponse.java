@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class ErrorResponse {
     private int status;
     private String message;
