@@ -57,6 +57,8 @@
 		</dependency>
 
 
+
+
 		<!-- Oracle JDBC (Kullanılmıyor, yorum satırına alındı) -->
 		<!--
         <dependency>
