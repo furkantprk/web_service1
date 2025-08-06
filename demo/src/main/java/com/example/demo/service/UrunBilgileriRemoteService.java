@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.KO_OtoEvrakDurumDTO;
 import com.example.demo.dto.UrunBilgileriDTO;
 import com.example.demo.feign.UrunBilgileriFeignClient;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,6 @@ public class UrunBilgileriRemoteService {
         return feignClient.getUrunBilgileriByKrediNumarasi(krediNumarasi);
     }
 
-    // YENİ SERVİS METOT: Kredi numarasına ait sıra numaralarını getirir
     public List<Integer> getRemoteSiralarByKrediNumarasi(String krediNumarasi) {
         return feignClient.getSiralarByKrediNumarasi(krediNumarasi);
     }
@@ -30,8 +30,24 @@ public class UrunBilgileriRemoteService {
         return feignClient.updateUrunBilgileri(krediNumarasi, sira, urunBilgileriDTO);
     }
 
-    // GÜNCELLENMİŞ SERVİS METOT: Kredi numarası ve isteğe bağlı sıra numarası ile işlem yapacak
     public String deleteAndReinsertRemoteEgmStateInformationByKrediNumarasiAndSira(String krediNumarasi, Integer sira) {
         return feignClient.deleteAndReinsertEgmStateInformationByKrediNumarasi(krediNumarasi, sira);
+    }
+
+    // 🔹 Yeni metot: Belirli bir kredi numarasına ait evrakları getirir
+    public List<KO_OtoEvrakDurumDTO> getRemoteKoOtoEvrakDurumByKrediNumarasi(String krediNumarasi) {
+        return feignClient.getKoOtoEvrakDurumByKrediNumarasi(krediNumarasi);
+    }
+
+    public List<KO_OtoEvrakDurumDTO> getAllRemoteKoOtoEvrakDurum() {
+        return feignClient.getAllKoOtoEvrakDurum();
+    }
+
+    // 🔹 Evrak durumu güncelleme
+    public KO_OtoEvrakDurumDTO updateRemoteKoOtoEvrakDurumByKrediAndEvrakKodu(
+            String krediNumarasi,
+            String evrakKodu,
+            KO_OtoEvrakDurumDTO updateData) {
+        return feignClient.updateKoOtoEvrakDurumByKrediAndEvrakKodu(krediNumarasi, evrakKodu, updateData);
     }
 }

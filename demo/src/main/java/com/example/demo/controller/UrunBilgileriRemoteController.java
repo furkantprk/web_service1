@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.KO_OtoEvrakDurumDTO;
 import com.example.demo.dto.UrunBilgileriDTO;
 import com.example.demo.expection.RemoteServiceNotFoundException;
 import com.example.demo.service.UrunBilgileriRemoteService;
@@ -62,5 +63,38 @@ public class UrunBilgileriRemoteController {
         }
 
         return ResponseEntity.ok(responseMessage);
+    }
+
+    // --- ✅ EKLENENLER ---
+
+    @GetMapping("/kootoevrakdurum")
+    public ResponseEntity<List<KO_OtoEvrakDurumDTO>> getAllKoOtoEvrakDurum() {
+        List<KO_OtoEvrakDurumDTO> list = service.getAllRemoteKoOtoEvrakDurum();
+        if (list.isEmpty()) {
+            throw new RemoteServiceNotFoundException("Evrak durumu verisi bulunamadı.");
+        }
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/kootoevrakdurum/{krediNumarasi}")
+    public ResponseEntity<List<KO_OtoEvrakDurumDTO>> getKoOtoEvrakDurumByKrediNumarasi(
+            @PathVariable String krediNumarasi) {
+        List<KO_OtoEvrakDurumDTO> list = service.getRemoteKoOtoEvrakDurumByKrediNumarasi(krediNumarasi); // Bu metodu servisinize eklemelisiniz
+        if (list.isEmpty()) {
+            throw new RemoteServiceNotFoundException("Belirtilen kredi numarasına ait evrak durumu verisi bulunamadı.");
+        }
+        return ResponseEntity.ok(list);
+    }
+
+    @PutMapping("/kootoevrakdurum/update/{krediNumarasi}/{evrakKodu}")
+    public ResponseEntity<KO_OtoEvrakDurumDTO> updateKoOtoEvrakDurumByKrediAndEvrakKodu(
+            @PathVariable String krediNumarasi,
+            @PathVariable String evrakKodu,
+            @RequestBody KO_OtoEvrakDurumDTO updateData) {
+        KO_OtoEvrakDurumDTO updated = service.updateRemoteKoOtoEvrakDurumByKrediAndEvrakKodu(krediNumarasi, evrakKodu, updateData);
+        if (updated == null) {
+            throw new RemoteServiceNotFoundException("Güncellenecek evrak durumu bulunamadı.");
+        }
+        return ResponseEntity.ok(updated);
     }
 }
