@@ -1,11 +1,13 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.KO_OtoEvrakDurumDTO;
 import com.example.demo.dto.UrunBilgileriDTO;
 import com.example.demo.feign.UrunBilgileriFeignClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,5 +67,39 @@ class UrunBilgileriRemoteServiceTest {
                 .thenReturn("Başarılı");
         String result = service.deleteAndReinsertRemoteEgmStateInformationByKrediNumarasiAndSira(kredi, sira);
         assertThat(result).isEqualTo("Başarılı");
+    }
+
+    @Test
+    void testGetRemoteKoOtoEvrakDurumByKrediNumarasi() {
+        String kredi = "123";
+        when(feignClient.getKoOtoEvrakDurumByKrediNumarasi(kredi)).thenReturn(List.of(new KO_OtoEvrakDurumDTO()));
+        List<KO_OtoEvrakDurumDTO> result = service.getRemoteKoOtoEvrakDurumByKrediNumarasi(kredi);
+        assertThat(result).isNotEmpty();
+        verify(feignClient).getKoOtoEvrakDurumByKrediNumarasi(kredi);
+    }
+
+    @Test
+    void testGetAllRemoteKoOtoEvrakDurum() {
+        when(feignClient.getAllKoOtoEvrakDurum()).thenReturn(List.of(new KO_OtoEvrakDurumDTO()));
+        List<KO_OtoEvrakDurumDTO> result = service.getAllRemoteKoOtoEvrakDurum();
+        assertThat(result).isNotEmpty();
+        verify(feignClient).getAllKoOtoEvrakDurum();
+    }
+
+    @Test
+    void testUpdateRemoteKoOtoEvrakDurumByKrediAndEvrakKodu() {
+        String kredi = "123";
+        String evrakKodu = "testEvrak";
+        KO_OtoEvrakDurumDTO dto = new KO_OtoEvrakDurumDTO();
+        when(feignClient.updateKoOtoEvrakDurumByKrediAndEvrakKodu(kredi, evrakKodu, dto)).thenReturn(dto);
+        KO_OtoEvrakDurumDTO result = service.updateRemoteKoOtoEvrakDurumByKrediAndEvrakKodu(kredi, evrakKodu, dto);
+        assertThat(result).isEqualTo(dto);
+    }
+
+    @Test
+    void testProcessRemoteKoGunKapamaByDate() {
+        LocalDate date = LocalDate.now();
+        service.processRemoteKoGunKapamaByDate(date);
+        verify(feignClient).processKoGunKapamaByDate(date);
     }
 }
