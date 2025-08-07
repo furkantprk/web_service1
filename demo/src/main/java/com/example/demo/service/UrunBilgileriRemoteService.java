@@ -1,3 +1,4 @@
+// dosya: `com.example.demo.service.UrunBilgileriRemoteService`
 package com.example.demo.service;
 
 import com.example.demo.dto.KO_OtoEvrakDurumDTO;
@@ -6,6 +7,7 @@ import com.example.demo.feign.UrunBilgileriFeignClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -34,7 +36,6 @@ public class UrunBilgileriRemoteService {
         return feignClient.deleteAndReinsertEgmStateInformationByKrediNumarasi(krediNumarasi, sira);
     }
 
-    // 🔹 Yeni metot: Belirli bir kredi numarasına ait evrakları getirir
     public List<KO_OtoEvrakDurumDTO> getRemoteKoOtoEvrakDurumByKrediNumarasi(String krediNumarasi) {
         return feignClient.getKoOtoEvrakDurumByKrediNumarasi(krediNumarasi);
     }
@@ -43,11 +44,15 @@ public class UrunBilgileriRemoteService {
         return feignClient.getAllKoOtoEvrakDurum();
     }
 
-    // 🔹 Evrak durumu güncelleme
     public KO_OtoEvrakDurumDTO updateRemoteKoOtoEvrakDurumByKrediAndEvrakKodu(
             String krediNumarasi,
             String evrakKodu,
             KO_OtoEvrakDurumDTO updateData) {
         return feignClient.updateKoOtoEvrakDurumByKrediAndEvrakKodu(krediNumarasi, evrakKodu, updateData);
+    }
+
+
+    public void processRemoteKoGunKapamaByDate(LocalDate date) {
+        feignClient.processKoGunKapamaByDate(date);
     }
 }

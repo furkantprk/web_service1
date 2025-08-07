@@ -4,8 +4,11 @@ import com.example.demo.dto.KO_OtoEvrakDurumDTO;
 import com.example.demo.dto.UrunBilgileriDTO;
 import com.example.demo.config.FeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @FeignClient(name = "urun-bilgileri-client", url = "https://kf-proje1.onrender.com", configuration = FeignConfig.class)
@@ -41,4 +44,8 @@ public interface UrunBilgileriFeignClient {
             @PathVariable("krediNumarasi") String krediNumarasi,
             @PathVariable("evrakKodu") String evrakKodu,
             @RequestBody KO_OtoEvrakDurumDTO updateData);
+
+    // 🔹 Yeni metot: Arkadaşının API'sindeki günlük kapanış işlemini çağırır
+    @DeleteMapping("/api/urunler/kogunkapama/process/{date}")
+    ResponseEntity<Void> processKoGunKapamaByDate(@PathVariable("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date);
 }

@@ -5,9 +5,11 @@ import com.example.demo.dto.UrunBilgileriDTO;
 import com.example.demo.expection.RemoteServiceNotFoundException;
 import com.example.demo.service.UrunBilgileriRemoteService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -79,7 +81,7 @@ public class UrunBilgileriRemoteController {
     @GetMapping("/kootoevrakdurum/{krediNumarasi}")
     public ResponseEntity<List<KO_OtoEvrakDurumDTO>> getKoOtoEvrakDurumByKrediNumarasi(
             @PathVariable String krediNumarasi) {
-        List<KO_OtoEvrakDurumDTO> list = service.getRemoteKoOtoEvrakDurumByKrediNumarasi(krediNumarasi); // Bu metodu servisinize eklemelisiniz
+        List<KO_OtoEvrakDurumDTO> list = service.getRemoteKoOtoEvrakDurumByKrediNumarasi(krediNumarasi);
         if (list.isEmpty()) {
             throw new RemoteServiceNotFoundException("Belirtilen kredi numarasına ait evrak durumu verisi bulunamadı.");
         }
@@ -96,5 +98,13 @@ public class UrunBilgileriRemoteController {
             throw new RemoteServiceNotFoundException("Güncellenecek evrak durumu bulunamadı.");
         }
         return ResponseEntity.ok(updated);
+    }
+
+    // 🔹 Yeni metot: Arkadaşının API'sindeki günlük kapanış işlemini çağırır
+    @DeleteMapping("/kogunkapama/process/{date}")
+    public ResponseEntity<Void> processKoGunKapamaByDate(
+            @PathVariable("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        service.processRemoteKoGunKapamaByDate(date);
+        return ResponseEntity.ok().build();
     }
 }
