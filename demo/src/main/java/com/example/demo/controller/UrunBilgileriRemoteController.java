@@ -1,7 +1,9 @@
+// dil: java
 package com.example.demo.controller;
 
 import com.example.demo.dto.KO_OtoEvrakDurumDTO;
 import com.example.demo.dto.UrunBilgileriDTO;
+import com.example.demo.dto.SmsRecordDTO;
 import com.example.demo.expection.RemoteServiceNotFoundException;
 import com.example.demo.service.UrunBilgileriRemoteService;
 import lombok.RequiredArgsConstructor;
@@ -67,8 +69,6 @@ public class UrunBilgileriRemoteController {
         return ResponseEntity.ok(responseMessage);
     }
 
-    // --- ✅ EKLENENLER ---
-
     @GetMapping("/kootoevrakdurum")
     public ResponseEntity<List<KO_OtoEvrakDurumDTO>> getAllKoOtoEvrakDurum() {
         List<KO_OtoEvrakDurumDTO> list = service.getAllRemoteKoOtoEvrakDurum();
@@ -100,11 +100,22 @@ public class UrunBilgileriRemoteController {
         return ResponseEntity.ok(updated);
     }
 
-    // 🔹 Yeni metot: Arkadaşının API'sindeki günlük kapanış işlemini çağırır
     @DeleteMapping("/kogunkapama/process/{date}")
     public ResponseEntity<Void> processKoGunKapamaByDate(
             @PathVariable("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         service.processRemoteKoGunKapamaByDate(date);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/sms/records")
+    public ResponseEntity<List<SmsRecordDTO>> getSmsRecords(
+            @RequestParam(required = false) String phoneNumber,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        List<SmsRecordDTO> smsRecords = service.getRemoteSmsRecords(phoneNumber, startDate, endDate);
+        if (smsRecords.isEmpty()) {
+            throw new RemoteServiceNotFoundException("Sorgu kriterlerine uygun SMS kaydı bulunamadı.");
+        }
+        return ResponseEntity.ok(smsRecords);
     }
 }

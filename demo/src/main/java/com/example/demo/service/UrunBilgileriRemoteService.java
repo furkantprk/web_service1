@@ -1,8 +1,9 @@
-// dosya: `com.example.demo.service.UrunBilgileriRemoteService`
+// dil: java
 package com.example.demo.service;
 
 import com.example.demo.dto.KO_OtoEvrakDurumDTO;
 import com.example.demo.dto.UrunBilgileriDTO;
+import com.example.demo.dto.SmsRecordDTO;
 import com.example.demo.feign.UrunBilgileriFeignClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -51,8 +52,11 @@ public class UrunBilgileriRemoteService {
         return feignClient.updateKoOtoEvrakDurumByKrediAndEvrakKodu(krediNumarasi, evrakKodu, updateData);
     }
 
-
     public void processRemoteKoGunKapamaByDate(LocalDate date) {
         feignClient.processKoGunKapamaByDate(date);
+    }
+
+    public List<SmsRecordDTO> getRemoteSmsRecords(String phoneNumber, LocalDate startDate, LocalDate endDate) {
+        return feignClient.getSmsRecords(phoneNumber, startDate, endDate);
     }
 }
